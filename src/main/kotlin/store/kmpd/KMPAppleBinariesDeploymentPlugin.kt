@@ -4,7 +4,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.configurationcache.extensions.capitalized
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
+import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFrameworkTask
 import store.kmpd.cocoapods.CocoaPodsSpecDeployment
 import store.kmpd.cocoapods.CocoaPodsXCFrameworkDeployment
@@ -70,6 +72,7 @@ abstract class AppleBinariesDeployment @Inject constructor(
         version: Version = Version.UsePatchTimestamp(),
     ) {
         project.pluginManager.withPlugin("org.jetbrains.kotlin.native.cocoapods") {
+            val podspecName = (project.extensions.getByType(KotlinMultiplatformExtension::class.java) as ExtensionAware).extensions.getByType(CocoapodsExtension::class.java).name
             project.tasks.withType(XCFrameworkTask::class.java).all { xcfTask ->
                 val isPodXCFrameworkTask = xcfTask.name.startsWith("pod")
                 if (!isPodXCFrameworkTask) return@all
@@ -84,7 +87,7 @@ abstract class AppleBinariesDeployment @Inject constructor(
                         root.resolve("${xcfTask.baseName.get()}.xcframework")
                     )
                     it.kgpGeneratedPodspec.set(
-                        root.resolve("${xcfTask.baseName.get()}.podspec")
+                        root.resolve("${podspecName}.podspec")
                     )
                     it.podspecDeployment.set(
                         podspecDeployment
