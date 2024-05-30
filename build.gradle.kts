@@ -4,10 +4,11 @@ plugins {
     `java-gradle-plugin`
     `maven-publish`
     signing
+    id("com.gradle.plugin-publish") version "1.2.1"
 }
 
 group = "store.kmpd"
-version = "0.0.2"
+version = layout.projectDirectory.file("VERSION").asFile.readText().trim()
 description = "Apple binaries deployment plugin for KMP"
 
 dependencies {
@@ -36,12 +37,16 @@ java {
 }
 
 gradlePlugin {
+    website.set("https://github.com/abdulowork/KMPAppleBinariesDeployment")
+    vcsUrl.set("https://github.com/abdulowork/KMPAppleBinariesDeployment")
+
     plugins {
         create("kmp_apple_binaries_deployment") {
             id = "store.kmpd.plugin"
             implementationClass = "store.kmpd.KMPAppleBinariesDeploymentPlugin"
             displayName = "Apple binaries deployment plugin for KMP"
             description = "Plugin for deploying SPM packages and CocoaPods specs from Kotlin Multiplatform projects"
+            tags.set(listOf("KMP", "Kotlin Multiplatform", "XCFramework", "publication", "deployment", "SPM", "Swift Package Manager", "CocoaPods"))
         }
     }
 }
