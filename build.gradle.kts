@@ -124,5 +124,9 @@ signing {
         val signingPassword: String? by project
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign(publishing.publications)
+    } else {
+        tasks.withType(Sign::class.java).configureEach {
+            enabled = false
+        }
     }
 }
