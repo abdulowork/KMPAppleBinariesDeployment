@@ -1,72 +1,26 @@
 
-import io.ktor.server.application.*
 import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.util.cio.*
-import io.ktor.utils.io.*
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.AfterEach
 import java.io.File
-import java.nio.file.Files
-import java.security.KeyStore
-import kotlin.io.path.createFile
-import kotlin.io.path.exists
 import kotlin.test.Test
-import kotlin.test.assertNotNull
 
 class SpmE2E {
 
     var daemon: Process? = null
+    var engine: ApplicationEngine? = null
 
     @AfterEach
-    fun destroyDaemon() {
+    fun destroySubprocesses() {
         daemon?.destroy()
+        engine?.stop()
+        daemon = null
+        engine = null
     }
 
     @Test
     fun `spm http publication e2e`() {
-        /**
-         * FIXME:
-         * This test requires keystore setup in the running JVM process and in the keychain
-         * 1. Export cer via "keytool -exportcert -keystore keystore.jks -alias sampleAlias -file output.cer"
-         * 2. Trust in keychain "security add-trusted-cert -p ssl -e certExpired -d -k ~/Library/Keychains/login.keychain output.cer"
-         */
-
-        val keyStoreFile = File("keystore.jks")
-        val keyStore = KeyStore.getInstance(keyStoreFile, "123456".toCharArray())
-
-        val environment = applicationEngineEnvironment {
-            connector {
-                port = 8080
-            }
-            sslConnector(
-                keyStore = keyStore,
-                keyAlias = "sampleAlias",
-                keyStorePassword = { "123456".toCharArray() },
-                privateKeyPassword = { "foobar".toCharArray() }) {
-                port = 8443
-                keyStorePath = keyStoreFile
-            }
-            module {
-                routing {
-                    put("/files/{file}") {
-                        val fileName = assertNotNull(call.parameters["file"]).toString()
-                        val file = File("build/functionalTest/uploadedFiles/${fileName}")
-                        file.parentFile.mkdirs()
-                        call.receiveChannel().copyAndClose(file.writeChannel())
-                    }
-                    get("/files/{file}") {
-                        val fileName = assertNotNull(call.parameters["file"]).toString()
-                        val file = File("build/functionalTest/uploadedFiles/${fileName}")
-                        call.respondFile(file)
-                    }
-                }
-            }
-        }
-        embeddedServer(Netty, environment = environment).start(wait = false)
+        engine = prepareUploadServer()
 
         val testName = "httpPublicationE2E"
         val kotlinProjectDir = File("build/functionalTest/kotlin").resolve(testName)
@@ -229,70 +183,6 @@ class SpmE2E {
     }
 
     private val kotlinVersion = "1.9.23"
-
-    private fun prepareGitRepo(
-        repositoryDir: File,
-    ): Process {
-        repositoryDir.mkdirs()
-
-        ProcessBuilder()
-            .command("git", "init", "--bare")
-            .directory(repositoryDir)
-            .inheritIO().start().waitFor()
-
-        repositoryDir.resolve("git-daemon-export-ok").createNewFile()
-
-        val daemon = ProcessBuilder()
-            .command("git", "daemon", "--base-path=.", "--reuseaddr", "--enable=receive-pack", "--verbose")
-            .directory(repositoryDir.parentFile)
-            .inheritIO().start()
-
-        return daemon
-    }
-
-    private fun prepareProject(
-        projectDir: File,
-        kotlinVersion: String,
-        otherPlugins: String = "",
-        buildScript: String,
-    ) {
-        projectDir.mkdirs()
-
-        File(projectDir, "settings.gradle.kts").writeText(
-            """
-                dependencyResolutionManagement {
-                    repositories {
-                        mavenCentral()
-                    }
-                }
-                
-                pluginManagement {
-                    repositories {
-                        maven("file://${projectDir.absoluteFile.parentFile.parentFile.parentFile.parentFile.resolve("repo").canonicalPath}")
-                        gradlePluginPortal()
-                    }
-                }
-            """.trimIndent()
-        )
-
-        File(projectDir, "build.gradle.kts").writeText(
-            """
-                plugins {
-                    id("store.kmpd.plugin") version "+"
-                    kotlin("multiplatform") version "$kotlinVersion"
-                    $otherPlugins
-                }
-
-                $buildScript
-            """.trimIndent()
-        )
-
-        val sources = projectDir.resolve("src/commonMain/kotlin").toPath()
-        if (!sources.exists()) {
-            Files.createDirectories(sources)
-            sources.resolve("stub.kt").createFile()
-        }
-    }
 
     private fun prepareSpmConsumer(
         projectDir: File,
