@@ -34,7 +34,7 @@ and apply it in your build script:
 
 plugins { 
     kotlin("multiplatform")
-    id("store.kmpd.plugin") version "0.0.2"
+    id("store.kmpd.plugin") version "0.0.4"
 }
 ```
 
