@@ -2,8 +2,6 @@
 
 KMP Apple binaries deployment Gradle plugin helps you publish your Kotlin Multiplatform project as an XCFramework end-to-end for Swift Package Manager and CocoaPods integrations.
 
-The plugin is WIP. Please let me know in the Issues if something doesn't work or there is no integration for your case.
-
 Currently supported are:
 * [Git deployment as a Swift Package with XCFramework deployment to](#spm):  
   * [Repository with the Swift Package (easiest, you just need a git repo)](#spm-single-repo)
@@ -15,20 +13,7 @@ Currently supported are:
   * [Spec repository](#cocoapods-specs-repo)
   * [File storage over http for both the podspec and the XCFramework](#cocoapods-http)
 
-The plugin is published to Maven Central, so you have to add it to plugin repositories:
-
-```kotlin
-// settings.gradle.kts
-
-pluginManagement {
-  repositories {
-    gradlePluginPortal()
-    mavenCentral()
-  }
-}
-```
-
-and apply it in your build script:
+Apply the plugin in your build script:
 ```kotlin
 // shared/build.gradle.kts
 
@@ -44,6 +29,8 @@ GIT_SSH_COMMAND='ssh -i /path/to/id_rsa -o IdentitiesOnly=yes' ./gradlew ...
 ```
 
 When resolving XCFramework from an authenticated storage, don't forget to configure [netrc or Keychain](#xcframework_download_auth).
+
+The plugin is WIP. Please let me know in the Issues if something doesn't work or there is no integration for your case.
 
 ## <a name="spm"></a> Swift Package Manager
 
