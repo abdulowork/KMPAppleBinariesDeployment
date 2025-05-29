@@ -1,6 +1,7 @@
 package store.kmpd.deployments
 
 import io.ktor.client.*
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
@@ -17,6 +18,7 @@ fun deployWithPut(
     password: String,
     uploadUrl: Url,
     file: File,
+    requestTimeoutMillis: Long,
 ) {
     runBlocking {
         val client = HttpClient {
@@ -30,6 +32,9 @@ fun deployWithPut(
                         )
                     }
                 }
+            }
+            install(HttpTimeout) {
+                this.requestTimeoutMillis = requestTimeoutMillis
             }
         }
 

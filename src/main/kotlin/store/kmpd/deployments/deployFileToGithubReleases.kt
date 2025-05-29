@@ -1,6 +1,7 @@
 package store.kmpd.deployments
 
 import io.ktor.client.*
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -44,13 +45,18 @@ fun deployFileToGithubReleases(
     fileToDeploy: File,
     deployedFileName: String,
     tagName: String,
+    requestTimeoutMillis: Long,
 ): String {
     runBlocking {
         val json = Json {
             namingStrategy = JsonNamingStrategy.SnakeCase
             ignoreUnknownKeys = true
         }
-        val client = HttpClient()
+        val client = HttpClient {
+            install(HttpTimeout) {
+                this.requestTimeoutMillis = requestTimeoutMillis
+            }
+        }
         val releaseCreationResponse = client.post("https://api.github.com") {
             url {
                 path("repos", username, repository, "releases")

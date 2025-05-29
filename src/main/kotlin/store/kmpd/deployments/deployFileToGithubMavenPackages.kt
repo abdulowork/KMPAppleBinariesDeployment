@@ -1,6 +1,7 @@
 package store.kmpd.deployments
 
 import io.ktor.client.*
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -17,9 +18,14 @@ fun deployFileToGithubMavenPackages(
     fileToDeploy: File,
     deployedFileName: String,
     packagePath: List<String>,
+    requestTimeoutMillis: Long,
 ): String {
     runBlocking {
-        val client = HttpClient()
+        val client = HttpClient {
+            install(HttpTimeout) {
+                this.requestTimeoutMillis = requestTimeoutMillis
+            }
+        }
         val response = client.put("https://maven.pkg.github.com") {
             url {
                 path(username, repository, *packagePath.toTypedArray(), deployedFileName)
