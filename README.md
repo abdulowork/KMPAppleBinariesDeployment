@@ -19,7 +19,7 @@ Apply the plugin in your build script:
 
 plugins { 
     kotlin("multiplatform")
-    id("store.kmpd.plugin") version "0.0.4"
+    id("store.kmpd.plugin") version "0.0.5"
 }
 ```
 
