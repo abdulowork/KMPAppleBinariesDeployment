@@ -21,6 +21,7 @@ fun deployFile(
                 fileToDeploy = file,
                 deployedFileName = deployedFileName,
                 packagePath = deployment.packagePath,
+                requestTimeoutMillis = deployment.requestTimeoutMillis,
             )
         }
 
@@ -48,6 +49,7 @@ fun deployFile(
                 targetCommitish = targetCommitishString,
                 deployedFileName = deployedFileName,
                 tagName = tagNameProvider(file),
+                requestTimeoutMillis = deployment.requestTimeoutMillis,
             )
         }
 
@@ -58,6 +60,7 @@ fun deployFile(
                 uploadDirectoryUrl = deployment.uploadDirectoryUrl,
                 fileToDeploy = file,
                 deployedFileName = deployedFileName,
+                requestTimeoutMillis = deployment.requestTimeoutMillis,
             )
         }
     }

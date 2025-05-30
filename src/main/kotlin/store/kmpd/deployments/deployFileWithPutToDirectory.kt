@@ -9,6 +9,7 @@ fun deployFileWithPutToDirectory(
     uploadDirectoryUrl: String,
     fileToDeploy: File,
     deployedFileName: String,
+    requestTimeoutMillis: Long,
 ): String {
     val uploadUrl = URLBuilder(uploadDirectoryUrl).appendPathSegments(deployedFileName).build()
     deployWithPut(
@@ -16,6 +17,7 @@ fun deployFileWithPutToDirectory(
         password = password,
         uploadUrl = uploadUrl,
         file = fileToDeploy,
+        requestTimeoutMillis = requestTimeoutMillis,
     )
     return uploadUrl.toString()
 }
